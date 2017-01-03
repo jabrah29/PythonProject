@@ -1,32 +1,81 @@
 <!DOCTYPE html>
-<html>
-  <head>
+<html ng-app="myApp">
+
+<head>
     <meta charset="UTF-8">
-    <meta property="og:image" content="http://ia.media-imdb.com/images/rock.jpg" />
+    <!-- Required meta tags always come first -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
+    <script src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+    <link href="//cdn.muicss.com/mui-0.9.7/css/mui.min.css" rel="stylesheet" type="text/css" />
+    <script src="//cdn.muicss.com/mui-0.9.7/js/mui.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.3.7/js/tether.min.js" integrity="sha384-XTs3FgkjiBgo8qjEjBk0tGmf3wPrWtA6coPfQDfFEY8AnYJwjalXCiosYRBIBZX8" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity="sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous">
     <title>title</title>
-  </head>
-  <body>
-    <p>Hello</p>
+</head>
+
+<body ng-controller='control'>
+
+    <form ng-submit='sendData(form)'>
+        <legend>Product Lookup</legend>
+
+        <div class="mui-textfield mui-textfield--float-label">
+            <input type="text" required ng-model="form.product">
+            <label>Enter product id</label>
+        </div>
+
+        <div class="mui-textfield mui-textfield--float-label">
+            <input type="text" required ng-model="form.store">
+            <label>Enter Store Name</label>
+        </div>
+        <button type="submit" class="mui-btn mui-btn--raised">Submit</button>
+
+    </form>
+
+
+
     <script>
-      window.fbAsyncInit = function() {
-        FB.init({
-          appId      : '1205231732899723',
-          xfbml      : true,
-          version    : 'v2.8'
+    angular.module('myApp',[])
+     .controller('control', ['$scope', '$http','$window', function($scope, $http,$window) {
+
+      $scope.sendData = function(form) {
+
+      $scope.data=form
+
+      $scope.info={};
+       var config = {
+        headers: {
+         'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'
+        }
+       }
+
+       console.log($scope.data)
+
+       $http.post('/search', $scope.data, config)
+        .success(function(data, status, headers, config) {
+         $scope.PostDataResponse = JSON.stringify(data);
+         $window.location.href="/search"
+        })
+        .error(function(data, status, header, config) {
+         $scope.ResponseDetails = "Data: " + data +
+          "<hr />status: " + status +
+          "<hr />headers: " + header +
+          "<hr />config: " + config;
         });
-      };
+      }
+     }]);
 
-      (function(d, s, id){
-         var js, fjs = d.getElementsByTagName(s)[0];
-         if (d.getElementById(id)) {return;}
-         js = d.createElement(s); js.id = id;
-         js.src = "https://connect.facebook.net/en_US/sdk.js";
-         fjs.parentNode.insertBefore(js, fjs);
-       }(document, 'script', 'facebook-jssdk'));
+
+
     </script>
+</body>
 
-    <div class="fb-like" data-send="true" data-width="450" data-show-faces="true">test</div>
 
-  </body>
+
 </html>
