@@ -57,10 +57,10 @@
 
        console.log($scope.data)
 
-       $http.post('/search', $scope.data, config)
+       $http.post('/index.html/search', $scope.data, config)
         .success(function(data, status, headers, config) {
          $scope.PostDataResponse = JSON.stringify(data);
-         $window.location.href="/search"
+         $window.location.href="/answers.html"
         })
         .error(function(data, status, header, config) {
          $scope.ResponseDetails = "Data: " + data +
@@ -70,8 +70,6 @@
         });
       }
      }]);
-
-
 
     </script>
 </body>
