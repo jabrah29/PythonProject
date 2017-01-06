@@ -6,19 +6,35 @@
     <!-- Required meta tags always come first -->
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
     <script src="//code.jquery.com/jquery-1.12.0.min.js"></script>
     <script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
     <link href="//cdn.muicss.com/mui-0.9.7/css/mui.min.css" rel="stylesheet" type="text/css" />
     <script src="//cdn.muicss.com/mui-0.9.7/js/mui.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/css/materialize.min.css">
+
+     <!-- Compiled and minified JavaScript -->
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/js/materialize.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.3.7/js/tether.min.js" integrity="sha384-XTs3FgkjiBgo8qjEjBk0tGmf3wPrWtA6coPfQDfFEY8AnYJwjalXCiosYRBIBZX8" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK" crossorigin="anonymous"></script>
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity="sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous">
     <title>title</title>
+
 </head>
+
+<style>
+  #cardDisplay{
+    display: inline-block;
+    height: 25%;
+    width: 25%;
+
+  }
+</style>
 
 <body ng-controller='control'>
 
@@ -26,7 +42,7 @@
         <legend>Product Lookup</legend>
 
         <div class="mui-textfield mui-textfield--float-label">
-            <input type="text" required ng-model="form.product">
+            <input type="text" required ng-model="form.product" value='Tylenol'>
             <label>Enter product id</label>
         </div>
 
@@ -34,13 +50,13 @@
             <input type="text" required ng-model="form.store">
             <label>Enter Store Name</label>
         </div>
-        <button type="submit" class="mui-btn mui-btn--raised">Submit</button>
+        <button type="submit" ng-click="template='answers.html'" class="mui-btn mui-btn--raised">Submit</button>
 
     </form>
 
 
-
     <script>
+    var yay=''
     angular.module('myApp',[])
      .controller('control', ['$scope', '$http','$window', function($scope, $http,$window) {
 
@@ -57,10 +73,21 @@
 
        console.log($scope.data)
 
-       $http.post('/index.html/search', $scope.data, config)
+        $http.post('/answers.html', $scope.data, config)
         .success(function(data, status, headers, config) {
          $scope.PostDataResponse = JSON.stringify(data);
-         $window.location.href="/answers.html"
+        })
+        .error(function(data, status, header, config) {
+         $scope.ResponseDetails = "Data: " + data +
+          "<hr />status: " + status +
+          "<hr />headers: " + header +
+          "<hr />config: " + config;
+        });
+
+        $http.get('/results',config)
+        .success(function(response, status, headers) {
+          $scope.dataResult=response
+          console.log($scope.dataResult)
         })
         .error(function(data, status, header, config) {
          $scope.ResponseDetails = "Data: " + data +
@@ -72,6 +99,19 @@
      }]);
 
     </script>
+    <div class="card" ng-repeat="d in dataResult track by $index" id="cardDisplay">
+      <div class="card-image waves-effect waves-block waves-light">
+        <img class="activator" src={{ '{{' }}d.imageUrl{{ '}}' }}>
+      </div>
+      <div class="card-content">
+        <span class="card-title activator grey-text text-darken-4">{{ '{{' }}d.productName{{ '}}' }}<i class="material-icons right">more_vert</i></span>
+        <p><a href="{{ '{{' }}d.url{{ '}}' }}">Buy Product</a></p>
+      </div>
+      <div class="card-reveal">
+        <span class="card-title grey-text text-darken-4">{{ '{{' }}d.storeName{{ '}}' }}<i class="material-icons right">close</i></span>
+        <p>{{ '{{' }}d.description{{ '}}' }}</p>
+      </div>
+    </div>
 </body>
 
 

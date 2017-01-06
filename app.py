@@ -7,6 +7,7 @@ from flask import render_template, request
 from productData import ProductData
 
 app = Flask(__name__)
+app.jinja_env.add_extension('jinja2.ext.do')
 
 results = {}
 
@@ -16,33 +17,32 @@ def home():
     return render_template("index.html")
 
 
-
-@app.route('/index.html/search', methods=['POST'])
-def parse():
+@app.route('/answers.html', methods=['POST'])
+def showResults():
     inputData = dict(request.form)
     jsonData = None
     for key in inputData:
         jsonData = json.loads(key)
 
     r = requests.get("http://api.prosperent.com/api/search?query=" + jsonData[
-        'product'] + "&api_key=16b05be80ffaa9daf39618d7c3423028&sortBy=price")
+        'product'] + "&api_key=16b05be80ffaa9daf39618d7c3423028&sortBy=price&limit=10")
     data = json.loads(r.text)
     json_results = data['data']
-
     global results
-    results = [json.dumps(ProductData(each_product['keyword'], each_product['merchant'], each_product['price'],
-                                      each_product['description'], each_product['affiliate_url'],
-                                      each_product['image_url']).__dict__) for
+    results = [ProductData(each_product['keyword'], each_product['merchant'], each_product['price'],
+                           each_product['description'], each_product['affiliate_url'],
+                           each_product['image_url']).__dict__ for
                each_product in json_results]
-    return render_template("answers.html")
+    return render_template("index.html")
 
 
-@app.route('/answers.html', methods=['GET', 'POST'])
-def showResults():
+
+
+@app.route('/results', methods=['GET'])
+def parse():
     global results
-
-    return render_template("answers.html", userData=json.dumps(results))
-
+    dataResult=jsonify(results)
+    return dataResult
 
 time.sleep(2)
 
