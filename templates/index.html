@@ -108,7 +108,7 @@ function init(){
       };
       marker.setPosition(pos);
       map.setCenter(pos);
-      //postRequest(pos)
+      postRequest(pos)
 
     }, function() {
       handleLocationError(true, infoWindow, map.getCenter());
@@ -123,9 +123,9 @@ function init(){
 }
 
 function postRequest(positionCoord){
-  // $.post("/answers.html", positionCoord, function(json) {
-  //   console.log(json);
-  // }, "json");
+  $.post("/answers.html", positionCoord, function(json) {
+    console.log(json);
+  }, "json");
 }
 //
 //

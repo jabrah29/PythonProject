@@ -1,14 +1,18 @@
 import io
 import json
 import time
+import urllib
+
 import googlemaps
 from datetime import datetime
 import requests
+import tweepy
 from flask import Flask, jsonify
 from flask import render_template, request
-from productData import ProductData
-from productData import Deals
+from yelpProductData import ProductData
+from yelpProductData import Deals
 from yelp.client import Client
+from GrouponProductData import GrouponProductData
 from yelp.oauth1_authenticator import Oauth1Authenticator
 
 app = Flask(__name__)
@@ -32,6 +36,24 @@ def login():
         client = Client(auth)
     return client
 
+
+
+def grouponData(lat,lng):
+    httpResult=urllib.request.urlopen("https://partner-api.groupon.com/deals.json?tsToken=US_AFF_0_201236_212556_0&lat="+lat+"&lng="+lng+"&filters=category:food-and-drink&offset=0&limit=10").read()
+
+    json_obj = json.loads(httpResult.decode())
+    groupon_data_list=[]
+    for each in json_obj['deals']:
+        groupon_data_list.append(GrouponProductData(each['title'],each['endAt'],
+                                                    each['isSoldOut'],each['merchant']['name'],each['options'][0]['details'][0]['description'],
+                                                    each['division']['lat'],each['division']['lng'],each['options'][0]['discount']['formattedAmount'],
+                                                    each['options'][0]['price']['formattedAmount'],each['dealUrl']))
+    return json_obj
+
+
+
+
+
 @app.route('/answers.html', methods=['POST'])
 def showResults():
 
@@ -42,6 +64,8 @@ def showResults():
         'deals_filter': 'true',
         'cll' : request.form['lat']+","+request.form['lng']
     }
+
+    grouponData(request.form['lat'], request.form['lng'])
 
     resultYelp=yelpClient.search('Chicago', **params)
 
