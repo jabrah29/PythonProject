@@ -1,15 +1,21 @@
+import io
 import json
 import time
-
+import googlemaps
+from datetime import datetime
 import requests
 from flask import Flask, jsonify
 from flask import render_template, request
 from productData import ProductData
+from productData import Deals
+from yelp.client import Client
+from yelp.oauth1_authenticator import Oauth1Authenticator
 
 app = Flask(__name__)
 app.jinja_env.add_extension('jinja2.ext.do')
 
-results = {}
+results = []
+dealsList=None
 
 
 @app.route('/index.html')
@@ -17,23 +23,45 @@ def home():
     return render_template("index.html")
 
 
+
+
+def login():
+    with io.open('static/authentication.json') as cred:
+        creds = json.load(cred)
+        auth = Oauth1Authenticator(**creds)
+        client = Client(auth)
+    return client
+
 @app.route('/answers.html', methods=['POST'])
 def showResults():
-    inputData = dict(request.form)
-    jsonData = None
-    for key in inputData:
-        jsonData = json.loads(key)
 
-    r = requests.get("http://api.prosperent.com/api/search?query=" + jsonData[
-        'product'] + "&api_key=16b05be80ffaa9daf39618d7c3423028&sortBy=price&limit=10")
-    data = json.loads(r.text)
-    json_results = data['data']
-    global results
-    results = [ProductData(each_product['keyword'], each_product['merchant'], each_product['price'],
-                           each_product['description'], each_product['affiliate_url'],
-                           each_product['image_url']).__dict__ for
-               each_product in json_results]
-    return render_template("index.html")
+    yelpClient=login()
+    params = {
+        'term': 'food',
+        'radius_filter': '1500',
+        'deals_filter': 'true',
+        'cll' : request.form['lat']+","+request.form['lng']
+    }
+
+    resultYelp=yelpClient.search('Chicago', **params)
+
+    for key in resultYelp.businesses:
+        dealsList = []
+        for d in key.deals:
+            dealsList.append(Deals(d.title, d.options[0].formatted_original_price, d.options[0].formatted_price, d.what_you_get ))
+        if not key.location.address:
+            addr="No Address Provided"
+        else:
+            addr=key.location.address[0]
+            jsonList=jsonify(eqtls=[e.serialize() for e in dealsList])
+        results.append(ProductData(key.name, key.rating,
+                           key.distance, key.image_url,
+                           jsonList, addr, key.location.coordinate.latitude,key.location.coordinate.longitude))
+
+
+    send= eqtls=[e.serialize() for e in results]
+
+    return send
 
 
 
